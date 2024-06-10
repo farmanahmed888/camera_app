@@ -1,16 +1,29 @@
-# camera_app
+# Video Capture App
 
-A new Flutter project.
+This Flutter application demonstrates how to capture video using the device camera. The app requests necessary permissions, initializes the camera, and allows users to start and stop video recording. Recorded videos are saved to the device's external storage.
+
+## Features
+
+-   Request camera, microphone, and storage permissions.
+-   Initialize and configure the camera.
+-   Start and stop video recording.
+-   Save recorded videos to external storage.
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
+### Prerequisites
 
-A few resources to get you started if this is your first Flutter project:
+Ensure you have the following installed on your development environment:
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+-   Flutter SDK
+-   Dart
+-   Android Studio or Xcode (for iOS development)
+-   A physical device or emulator with a camera
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+### Permissions
+
+This app requires the following permissions:
+
+-   Camera
+-   Microphone
+-   Storage
