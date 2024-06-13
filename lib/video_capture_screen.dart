@@ -7,7 +7,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'dart:io';
 
 class VideoCaptureScreen extends StatefulWidget {
-  const VideoCaptureScreen({Key? key}) : super(key: key);
+  const VideoCaptureScreen({super.key});
 
   @override
   _VideoCaptureScreenState createState() => _VideoCaptureScreenState();
@@ -46,7 +46,7 @@ class _VideoCaptureScreenState extends State<VideoCaptureScreen> {
 
   Future<void> _setShutterSpeed(int speed) async {
     try {
-      8await platform.invokeMethod('setShutterSpeed', {'speed': speed});
+      await platform.invokeMethod('setShutterSpeed', {'speed': speed});
     } on PlatformException catch (e) {
       print("Failed to set shutter speed: '${e.message}'.");
     }
