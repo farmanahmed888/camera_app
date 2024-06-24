@@ -16,6 +16,9 @@ class _VideoCaptureScreenState extends State<VideoCaptureScreen> {
   CameraController? _controller;
   List<CameraDescription>? _cameras;
   bool _isRecording = false;
+  double _minAvailableExposureOffset = 0.0;
+  double _maxAvailableExposureOffset = 0.0;
+  double _currentExposureOffset = 0.0;
 
   @override
   void initState() {
@@ -34,9 +37,17 @@ class _VideoCaptureScreenState extends State<VideoCaptureScreen> {
       fps: 60,
     );
     await _controller!.initialize();
+    _controller?.getMinExposureOffset().then((value) {
+      _minAvailableExposureOffset = value;
+      setState(() {});
+    });
+    _controller?.getMaxExposureOffset().then((value) {
+      _maxAvailableExposureOffset = value;
+      setState(() {});
+    });
     setState(() {});
   } else {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Permissions not granted')));
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Permissions not granted')));
   }
 }
 
@@ -92,14 +103,26 @@ class _VideoCaptureScreenState extends State<VideoCaptureScreen> {
   @override
   Widget build(BuildContext context) {
     if (_controller == null || !_controller!.value.isInitialized) {
-      return Center(child: CircularProgressIndicator());
+      return const Center(child: CircularProgressIndicator());
     }
 
     return Scaffold(
-      appBar: AppBar(title: Text('Video Capture')),
+      appBar: AppBar(title: const Text('Video Capture')),
       body: Stack(
         children: [
           CameraPreview(_controller!),
+          Slider(
+            value: _currentExposureOffset,
+            min: _minAvailableExposureOffset,
+            max: _maxAvailableExposureOffset,
+            divisions: 100,
+            onChanged: (value) async {
+              setState(() {
+                _currentExposureOffset = value;
+              });
+              await _controller!.setExposureOffset(value);
+            },
+          ),
           Positioned(
             bottom: 30,
             left: 0,
