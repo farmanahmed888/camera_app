@@ -34,7 +34,7 @@ class _VideoCaptureScreenState extends State<VideoCaptureScreen> {
     _controller = CameraController(
       _cameras![0],
       ResolutionPreset.high,
-      fps: 60,
+      fps: 30,
     );
     await _controller!.initialize();
     _controller?.getMinExposureOffset().then((value) {
