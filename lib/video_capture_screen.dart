@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'package:camera/camera.dart';
+import 'package:ffmpeg_kit_flutter/return_code.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'dart:io';
+import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
 
 class VideoCaptureScreen extends StatefulWidget {
   const VideoCaptureScreen({super.key});
@@ -27,29 +29,30 @@ class _VideoCaptureScreenState extends State<VideoCaptureScreen> {
   }
 
   Future<void> _initializeCamera() async {
-  if (await Permission.camera.request().isGranted &&
-      await Permission.microphone.request().isGranted &&
-      await Permission.storage.request().isGranted) {
-    _cameras = await availableCameras();
-    _controller = CameraController(
-      _cameras![0],
-      ResolutionPreset.high,
-      fps: 30,
-    );
-    await _controller!.initialize();
-    _controller?.getMinExposureOffset().then((value) {
-      _minAvailableExposureOffset = value;
+    if (await Permission.camera.request().isGranted &&
+        await Permission.microphone.request().isGranted &&
+        await Permission.storage.request().isGranted) {
+      _cameras = await availableCameras();
+      _controller = CameraController(
+        _cameras![0],
+        ResolutionPreset.high,
+        fps: 30,
+      );
+      await _controller!.initialize();
+      _controller?.getMinExposureOffset().then((value) {
+        _minAvailableExposureOffset = value;
+        setState(() {});
+      });
+      _controller?.getMaxExposureOffset().then((value) {
+        _maxAvailableExposureOffset = value;
+        setState(() {});
+      });
       setState(() {});
-    });
-    _controller?.getMaxExposureOffset().then((value) {
-      _maxAvailableExposureOffset = value;
-      setState(() {});
-    });
-    setState(() {});
-  } else {
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Permissions not granted')));
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Permissions not granted')));
+    }
   }
-}
 
   Future<void> _startVideoRecording() async {
     if (!_controller!.value.isInitialized) {
@@ -86,13 +89,17 @@ class _VideoCaptureScreenState extends State<VideoCaptureScreen> {
   }
 
   Future<void> _saveVideo(XFile videoFile) async {
-    final Directory? extDir = await getExternalStorageDirectory();
-    final String dirPath = '${extDir!.path}/DCIM';
-    await Directory(dirPath).create(recursive: true);
-    final String filePath = '$dirPath/${DateTime.now().millisecondsSinceEpoch}.mp4';
-    await videoFile.saveTo(filePath);
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Video saved to $filePath')));
-  }
+  final Directory? extDir = await getExternalStorageDirectory();
+  final String dirPath = '${extDir!.path}/DCIM';
+  await Directory(dirPath).create(recursive: true);
+  final String filePath = '$dirPath/${DateTime.now().millisecondsSinceEpoch}.mp4';
+  final String outputPath = '$dirPath/converted_${DateTime.now().millisecondsSinceEpoch}.mp4';
+  await videoFile.saveTo(filePath);
+
+  var result = await FFmpegKit.executeAsync('-i $filePath -b:v 15M -filter:v fps=60 $outputPath');
+  result.getAllLogs().then((logs) => print('FFmpeg process exited with rc ${result.getReturnCode()}. Logs: $logs'));
+}
+
 
   @override
   void dispose() {
